@@ -1,0 +1,91 @@
+DNS Configuration: CentOS7
+--------------------------
+
+Operating System     : CentOS 7 minimal server
+Hostname             : server.example.bd
+IP Address           : 192.168.1.200
+
+yum install bind bind-utils -y
+
+Edit ‘/etc/named.conf’ file.
+
+options {
+        listen-on port 53 { 127.0.0.1; 192.168.1.200; };
+#       listen-on-v6 port 53 { ::1; };
+...
+
+...
+allow-query     { localhost; 192.168.1.0/24; };
+...
+...
+zone "example.bd" IN {
+type master;
+file "db.fd.example";
+allow-update { none; };
+};
+zone "1.168.192.in-addr.arpa" IN {
+type master;
+file "db.rv.example";
+allow-update { none; };
+};
+...
+
+save the file
+
+cd /var/named
+
+vi db.fd.example
+$TTL 86400
+@   IN  SOA     server.example.bd. root.example.bd. (
+        2011071001  ;Serial
+        3600        ;Refresh
+        1800        ;Retry
+        604800      ;Expire
+        86400       ;Minimum TTL
+)
+@       IN  NS          server.example.bd.
+@       IN  A           192.168.1.200
+server  IN  A           192.168.1.200
+ipa     IN  A           192.168.1.250
+
+
+vi db.rv.example
+$TTL 86400
+@   IN  SOA     server.example.bd. root.example.bd. (
+        2011071001  ;Serial
+        3600        ;Refresh
+        1800        ;Retry
+        604800      ;Expire
+        86400       ;Minimum TTL
+)
+@       IN  NS          server.example.bd.
+@       IN  PTR         example.bd.
+server  IN  A           192.168.1.200
+client  IN  A           192.168.1.103
+200     IN  PTR         server.example.bd.
+
+
+systemctl enable named
+systemctl start named
+
+firewall-cmd --permanent --add-port=53/tcp
+firewall-cmd --permanent --add-port=53/udp
+
+chgrp named -R /var/named
+chown -v root:named /etc/named.conf
+restorecon -rv /var/named
+
+Now Check DNS server:
+
+named-checkconf /etc/named.conf
+
+named-checkzone example.bd /var/named/db.fd.example
+named-checkzone example.bd /var/named/db.rv.example
+
+dig server.example.bd
+nslookup example.bd
+
+
+
+
+
