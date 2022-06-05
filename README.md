@@ -1,6 +1,6 @@
 - 👋 Hi, I’m @zhdhasn
 - 👀 I’m interested in ...system automation
-- 🌱 I’m currently learning ...Ansible
+- 🌱 I’m RHCE Certified.
 - 💞️ I’m looking to collaborate on ...
 - 📫 How to reach me ...
 
